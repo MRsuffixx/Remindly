@@ -54,4 +54,7 @@ interface EventDao {
     
     @Query("DELETE FROM events")
     suspend fun deleteAllEvents()
+    
+    @Query("DELETE FROM events WHERE eventType = 'HOLIDAY'")
+    suspend fun deleteHolidayEvents()
 }
