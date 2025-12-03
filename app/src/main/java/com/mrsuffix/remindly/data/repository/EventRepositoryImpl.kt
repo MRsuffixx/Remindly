@@ -129,6 +129,14 @@ class EventRepositoryImpl @Inject constructor(
             0
         }
     }
+    
+    override suspend fun deleteAllEvents() {
+        eventDao.deleteAllEvents()
+    }
+    
+    override suspend fun deleteHolidayEvents() {
+        eventDao.deleteHolidayEvents()
+    }
 }
 
 /**

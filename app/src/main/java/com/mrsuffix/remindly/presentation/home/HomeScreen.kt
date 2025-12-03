@@ -3,6 +3,7 @@ package com.mrsuffix.remindly.presentation.home
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -19,14 +21,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.mrsuffix.remindly.R
 import com.mrsuffix.remindly.domain.model.Event
 import com.mrsuffix.remindly.domain.model.EventType
 import com.mrsuffix.remindly.ui.theme.*
@@ -100,64 +108,153 @@ private fun HomeTopBar(
     onSearchQueryChange: (String) -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    if (isSearchActive) {
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = onSearchQueryChange,
-            onSearch = {},
-            active = true,
-            onActiveChange = onSearchActiveChange,
-            placeholder = { Text("Etkinlik ara...") },
-            leadingIcon = {
-                IconButton(onClick = { onSearchActiveChange(false) }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
-                }
-            },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { onSearchQueryChange("") }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Temizle")
+    val focusRequester = remember { FocusRequester() }
+    
+    LaunchedEffect(isSearchActive) {
+        if (isSearchActive) {
+            focusRequester.requestFocus()
+        }
+    }
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = if (isSearchActive) 4.dp else 0.dp
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isSearchActive) {
+                    // Search mode
+                    IconButton(
+                        onClick = { 
+                            onSearchActiveChange(false)
+                            onSearchQueryChange("")
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Geri",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (searchQuery.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.home_search_hint),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester),
+                            textStyle = TextStyle(
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            singleLine = true,
+                            cursorBrush = SolidColor(Primary)
+                        )
+                    }
+                    
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Temizle",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else {
+                    // Normal mode
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(GradientStart, GradientEnd)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎂",
+                                fontSize = 22.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Remindly",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Primary
+                            )
+                            Text(
+                                text = stringResource(R.string.app_tagline),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    
+                    // Search button
+                    IconButton(
+                        onClick = { onSearchActiveChange(true) },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Ara",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // Settings button
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Ayarlar",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {}
-    } else {
-        TopAppBar(
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "🎂",
-                        fontSize = 28.sp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Remindly",
-                        fontWeight = FontWeight.Bold,
-                        color = Primary
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = { onSearchActiveChange(true) }) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = "Ara",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                IconButton(onClick = onSettingsClick) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Ayarlar",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        )
+            }
+        }
     }
 }
 
@@ -169,52 +266,157 @@ private fun HomeContent(
     onDeleteEvent: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    val events = when (uiState.selectedTab) {
+        HomeTab.UPCOMING -> uiState.upcomingEvents
+        HomeTab.THIS_WEEK -> uiState.thisWeekEvents
+        HomeTab.THIS_MONTH -> uiState.thisMonthEvents
+    }
+    
+    // Separate birthdays and special days
+    val birthdays = events.filter { it.eventType == EventType.BIRTHDAY }
+    val specialDays = events.filter { it.eventType != EventType.BIRTHDAY }
+    
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 100.dp)
+    ) {
         // Quick Stats Card
-        QuickStatsCard(
-            todayCount = uiState.upcomingEvents.count { it.daysUntilNext() == 0 },
-            thisWeekCount = uiState.thisWeekEvents.size,
-            thisMonthCount = uiState.thisMonthEvents.size
-        )
-        
-        // Tab Row
-        TabRow(
-            selectedTabIndex = uiState.selectedTab.ordinal,
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = Primary
-        ) {
-            HomeTab.entries.forEach { tab ->
-                Tab(
-                    selected = uiState.selectedTab == tab,
-                    onClick = { onTabSelected(tab) },
-                    text = {
-                        Text(
-                            text = when (tab) {
-                                HomeTab.UPCOMING -> "Yaklaşan"
-                                HomeTab.THIS_WEEK -> "Bu Hafta"
-                                HomeTab.THIS_MONTH -> "Bu Ay"
-                            },
-                            fontWeight = if (uiState.selectedTab == tab) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
-                )
-            }
+        item {
+            QuickStatsCard(
+                todayCount = uiState.upcomingEvents.count { it.daysUntilNext() == 0 },
+                thisWeekCount = uiState.thisWeekEvents.size,
+                thisMonthCount = uiState.thisMonthEvents.size
+            )
         }
         
-        // Events List
-        val events = when (uiState.selectedTab) {
-            HomeTab.UPCOMING -> uiState.upcomingEvents
-            HomeTab.THIS_WEEK -> uiState.thisWeekEvents
-            HomeTab.THIS_MONTH -> uiState.thisMonthEvents
+        // Tab Row
+        item {
+            ScrollableTabRow(
+                selectedTabIndex = uiState.selectedTab.ordinal,
+                containerColor = Color.Transparent,
+                contentColor = Primary,
+                edgePadding = 16.dp,
+                divider = {}
+            ) {
+                HomeTab.entries.forEach { tab ->
+                    val isSelected = uiState.selectedTab == tab
+                    Tab(
+                        selected = isSelected,
+                        onClick = { onTabSelected(tab) },
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (isSelected) Primary else Color.Transparent
+                            ),
+                        text = {
+                            Text(
+                                text = when (tab) {
+                                    HomeTab.UPCOMING -> "📅 Yaklaşan"
+                                    HomeTab.THIS_WEEK -> "📆 Bu Hafta"
+                                    HomeTab.THIS_MONTH -> "🗓️ Bu Ay"
+                                },
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
         
         if (events.isEmpty()) {
-            EmptyStateView(tab = uiState.selectedTab)
+            item {
+                EmptyStateView(tab = uiState.selectedTab)
+            }
         } else {
-            EventsList(
-                events = events,
-                onEventClick = onEventClick,
-                onDeleteEvent = onDeleteEvent
+            // Birthdays Section
+            if (birthdays.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Doğum Günleri",
+                        emoji = "🎂",
+                        count = birthdays.size,
+                        color = BirthdayColor
+                    )
+                }
+                
+                items(birthdays, key = { "birthday_${it.id}" }) { event ->
+                    EventCard(
+                        event = event,
+                        onClick = { onEventClick(event.id) },
+                        onDelete = { onDeleteEvent(event.id) }
+                    )
+                }
+                
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+            }
+            
+            // Special Days Section
+            if (specialDays.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Özel Günler",
+                        emoji = "✨",
+                        count = specialDays.size,
+                        color = Secondary
+                    )
+                }
+                
+                items(specialDays, key = { "special_${it.id}" }) { event ->
+                    EventCard(
+                        event = event,
+                        onClick = { onEventClick(event.id) },
+                        onDelete = { onDeleteEvent(event.id) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    emoji: String,
+    count: Int,
+    color: Color
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(color.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = emoji, fontSize = 18.sp)
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(color.copy(alpha = 0.15f))
+                .padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = color
             )
         }
     }
@@ -296,25 +498,6 @@ private fun StatItem(
     }
 }
 
-@Composable
-private fun EventsList(
-    events: List<Event>,
-    onEventClick: (Long) -> Unit,
-    onDeleteEvent: (Long) -> Unit
-) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(events, key = { it.id }) { event ->
-            EventCard(
-                event = event,
-                onClick = { onEventClick(event.id) },
-                onDelete = { onDeleteEvent(event.id) }
-            )
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -344,16 +527,46 @@ private fun EventCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Etkinliği Sil") },
-            text = { Text("\"${event.name}\" etkinliğini silmek istediğinize emin misiniz?") },
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            title = { 
+                Text(
+                    "Etkinliği Sil",
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) 
+            },
+            text = { 
+                Text(
+                    "\"${event.name}\" etkinliğini silmek istediğinize emin misiniz?",
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) 
+            },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         onDelete()
                         showDeleteDialog = false
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Text("Sil", color = MaterialTheme.colorScheme.error)
+                    Text("Sil")
                 }
             },
             dismissButton = {
@@ -373,128 +586,181 @@ private fun EventCard(
         }
     )
     
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        MaterialTheme.colorScheme.error,
-                        RoundedCornerShape(16.dp)
-                    )
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Sil",
-                    tint = Color.White
-                )
-            }
-        },
-        content = {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onClick),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Row(
+    Box(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+    ) {
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.error
+                                )
+                            )
+                        )
+                        .padding(horizontal = 24.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Sil",
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Sil",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            },
+            content = {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .clickable(onClick = onClick),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    // Timeline indicator
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .width(4.dp)
-                            .height(60.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(timelineColor)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    // Emoji
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(eventColor.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = event.eventCategory.emoji,
-                            fontSize = 24.sp
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    // Event details
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = event.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = event.eventCategory.displayName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = event.nextOccurrence().format(
-                                DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("tr"))
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
-                    // Days until badge
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // Timeline indicator
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(timelineColor.copy(alpha = 0.15f))
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .width(4.dp)
+                                .height(64.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(timelineColor, timelineColor.copy(alpha = 0.5f))
+                                    )
+                                )
+                        )
+                        
+                        Spacer(modifier = Modifier.width(14.dp))
+                        
+                        // Emoji with gradient background
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            eventColor.copy(alpha = 0.2f),
+                                            eventColor.copy(alpha = 0.1f)
+                                        )
+                                    )
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = eventColor.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = when {
-                                    daysUntil == 0 -> "Bugün!"
-                                    daysUntil == 1 -> "Yarın"
-                                    else -> "$daysUntil gün"
-                                },
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = timelineColor
+                                text = event.eventCategory.emoji,
+                                fontSize = 26.sp
                             )
                         }
-                        if (event.yearsSince() > 0 && event.eventType == EventType.BIRTHDAY) {
+                        
+                        Spacer(modifier = Modifier.width(14.dp))
+                        
+                        // Event details
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = event.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(eventColor)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = event.eventCategory.displayName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "${event.yearsSince() + 1}. yaş",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = event.nextOccurrence().format(
+                                    DateTimeFormatter.ofPattern("d MMMM yyyy, EEEE", Locale("tr"))
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                             )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        // Days until badge
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(
+                                        brush = Brush.linearGradient(
+                                            colors = if (daysUntil == 0) {
+                                                listOf(timelineColor, timelineColor.copy(alpha = 0.8f))
+                                            } else {
+                                                listOf(timelineColor.copy(alpha = 0.15f), timelineColor.copy(alpha = 0.1f))
+                                            }
+                                        )
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = when {
+                                        daysUntil == 0 -> "Bugün!"
+                                        daysUntil == 1 -> "Yarın"
+                                        else -> "$daysUntil gün"
+                                    },
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (daysUntil == 0) Color.White else timelineColor
+                                )
+                            }
+                            if (event.yearsSince() > 0 && event.eventType == EventType.BIRTHDAY) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "${event.yearsSince() + 1}. yaş 🎈",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = eventColor
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -541,12 +807,29 @@ private fun SearchResultsList(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "🔍", fontSize = 48.sp)
-                Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🔍", fontSize = 36.sp)
+                }
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "Sonuç bulunamadı",
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Farklı bir arama terimi deneyin",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -554,10 +837,32 @@ private fun SearchResultsList(
     } else {
         LazyColumn(
             modifier = modifier,
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            items(results, key = { it.id }) { event ->
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = Primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${results.size} sonuç bulundu",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Primary
+                    )
+                }
+            }
+            
+            items(results, key = { "search_${it.id}" }) { event ->
                 EventCard(
                     event = event,
                     onClick = { onEventClick(event.id) },

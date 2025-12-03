@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.mrsuffix.remindly.data.contacts.ContactsHelper
 import com.mrsuffix.remindly.data.local.dao.EventDao
 import com.mrsuffix.remindly.data.local.database.RemindlyDatabase
 import com.mrsuffix.remindly.data.repository.EventRepositoryImpl
@@ -73,5 +74,13 @@ object AppModule {
         dataStore: DataStore<Preferences>
     ): SettingsRepository {
         return SettingsRepositoryImpl(dataStore)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideContactsHelper(
+        @ApplicationContext context: Context
+    ): ContactsHelper {
+        return ContactsHelper(context)
     }
 }

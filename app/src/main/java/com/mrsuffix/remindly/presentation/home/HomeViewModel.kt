@@ -93,10 +93,18 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(isSearchActive = active, searchQuery = if (!active) "" else it.searchQuery) }
     }
     
+    private var searchJob: kotlinx.coroutines.Job? = null
+    
     fun updateSearchQuery(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
+        
+        // Cancel previous search job
+        searchJob?.cancel()
+        
         if (query.isNotBlank()) {
-            viewModelScope.launch {
+            searchJob = viewModelScope.launch {
+                // Small delay for debouncing
+                kotlinx.coroutines.delay(150)
                 eventRepository.searchEvents(query).collect { results ->
                     _uiState.update { it.copy(searchResults = results) }
                 }

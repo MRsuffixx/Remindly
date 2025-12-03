@@ -1,13 +1,20 @@
 package com.mrsuffix.remindly.presentation.settings
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,19 +25,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mrsuffix.remindly.data.contacts.ContactWithBirthday
 import com.mrsuffix.remindly.domain.model.ThemeMode
 import com.mrsuffix.remindly.ui.theme.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +54,17 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    
+    // Permission launcher for contacts
+    val contactsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.showContactsDialog(true)
+        } else {
+            Toast.makeText(context, "Rehber izni gerekli", Toast.LENGTH_SHORT).show()
+        }
+    }
     
     // Handle import result
     LaunchedEffect(uiState.importResult) {
@@ -53,6 +78,21 @@ fun SettingsScreen(
                 }
             }
             viewModel.clearImportResult()
+        }
+    }
+    
+    // Handle contacts import result
+    LaunchedEffect(uiState.contactsImportResult) {
+        uiState.contactsImportResult?.let { result ->
+            when (result) {
+                is ContactsImportResult.Success -> {
+                    Toast.makeText(context, "${result.count} kişi eklendi", Toast.LENGTH_SHORT).show()
+                }
+                is ContactsImportResult.Error -> {
+                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+            viewModel.clearContactsImportResult()
         }
     }
     
@@ -138,6 +178,36 @@ fun SettingsScreen(
                 }
             }
             
+            // Contacts Section
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                SettingsSectionHeader(title = "Rehber", icon = Icons.Default.Contacts)
+            }
+            
+            item {
+                SettingsCard {
+                    SettingsClickableItem(
+                        title = "Rehberden Ekle",
+                        subtitle = "Doğum günü olan kişileri içe aktar",
+                        icon = Icons.Outlined.PersonAdd,
+                        iconColor = Secondary,
+                        onClick = {
+                            when {
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.READ_CONTACTS
+                                ) == PackageManager.PERMISSION_GRANTED -> {
+                                    viewModel.showContactsDialog(true)
+                                }
+                                else -> {
+                                    contactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+            
             // Data Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -150,6 +220,7 @@ fun SettingsScreen(
                         title = "Yedekle",
                         subtitle = "Etkinliklerinizi dışa aktarın",
                         icon = Icons.Outlined.CloudUpload,
+                        iconColor = HolidayColor,
                         onClick = { viewModel.exportData() }
                     )
                     
@@ -159,7 +230,28 @@ fun SettingsScreen(
                         title = "Geri Yükle",
                         subtitle = "Etkinliklerinizi içe aktarın",
                         icon = Icons.Outlined.CloudDownload,
+                        iconColor = HolidayColor,
                         onClick = { viewModel.showRestoreDialog(true) }
+                    )
+                    
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    
+                    SettingsClickableItem(
+                        title = "Varsayılan Tatilleri Yükle",
+                        subtitle = "Türk tatillerini yeniden ekle",
+                        icon = Icons.Outlined.Restore,
+                        iconColor = FamilyColor,
+                        onClick = { viewModel.showRestoreDefaultsDialog(true) }
+                    )
+                    
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    
+                    SettingsClickableItem(
+                        title = "Tüm Verileri Sil",
+                        subtitle = "Tüm etkinlikleri kalıcı olarak sil",
+                        icon = Icons.Outlined.DeleteForever,
+                        iconColor = MaterialTheme.colorScheme.error,
+                        onClick = { viewModel.showDeleteAllDialog(true) }
                     )
                     
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
@@ -241,6 +333,35 @@ fun SettingsScreen(
             onDismiss = { viewModel.showAboutDialog(false) }
         )
     }
+    
+    // Delete All Dialog
+    if (uiState.showDeleteAllDialog) {
+        DeleteAllDialog(
+            onConfirm = { viewModel.deleteAllEvents() },
+            onDismiss = { viewModel.showDeleteAllDialog(false) }
+        )
+    }
+    
+    // Restore Defaults Dialog
+    if (uiState.showRestoreDefaultsDialog) {
+        RestoreDefaultsDialog(
+            onConfirm = { viewModel.restoreDefaultHolidays() },
+            onDismiss = { viewModel.showRestoreDefaultsDialog(false) }
+        )
+    }
+    
+    // Contacts Dialog
+    if (uiState.showContactsDialog) {
+        ContactsDialog(
+            contacts = uiState.contactsWithBirthdays,
+            isLoading = uiState.isLoadingContacts,
+            onToggleContact = viewModel::toggleContactSelection,
+            onSelectAll = { viewModel.selectAllContacts(true) },
+            onDeselectAll = { viewModel.selectAllContacts(false) },
+            onImport = { viewModel.importSelectedContacts() },
+            onDismiss = { viewModel.showContactsDialog(false) }
+        )
+    }
 }
 
 @Composable
@@ -289,7 +410,8 @@ private fun SettingsClickableItem(
     subtitle: String,
     icon: ImageVector,
     onClick: () -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    iconColor: Color = Primary
 ) {
     Row(
         modifier = Modifier
@@ -300,10 +422,10 @@ private fun SettingsClickableItem(
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .clip(CircleShape)
                 .background(
-                    if (enabled) Primary.copy(alpha = 0.1f)
+                    if (enabled) iconColor.copy(alpha = 0.12f)
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                 ),
             contentAlignment = Alignment.Center
@@ -311,8 +433,8 @@ private fun SettingsClickableItem(
             Icon(
                 icon,
                 contentDescription = null,
-                tint = if (enabled) Primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                modifier = Modifier.size(20.dp)
+                tint = if (enabled) iconColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                modifier = Modifier.size(22.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -320,10 +442,11 @@ private fun SettingsClickableItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 color = if (enabled) MaterialTheme.colorScheme.onSurface
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
@@ -645,4 +768,365 @@ private fun AboutDialog(
             }
         }
     )
+}
+
+@Composable
+private fun DeleteAllDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.DeleteForever,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        },
+        title = {
+            Text(
+                text = "Tüm Verileri Sil",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Text(
+                text = "Tüm etkinlikleriniz kalıcı olarak silinecek. Bu işlem geri alınamaz!",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Tümünü Sil")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
+    )
+}
+
+@Composable
+private fun RestoreDefaultsDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(FamilyColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Restore,
+                    contentDescription = null,
+                    tint = FamilyColor,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        },
+        title = {
+            Text(
+                text = "Varsayılan Tatilleri Yükle",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Text(
+                text = "Mevcut tatil etkinlikleri silinecek ve Türk resmi/dini tatilleri yeniden eklenecek.",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = FamilyColor)
+            ) {
+                Text("Yükle")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
+    )
+}
+
+@Composable
+private fun ContactsDialog(
+    contacts: List<ContactWithBirthday>,
+    isLoading: Boolean,
+    onToggleContact: (String) -> Unit,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    onImport: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val selectedCount = contacts.count { it.isSelected }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.85f),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Secondary, FamilyColor)
+                            )
+                        )
+                        .padding(20.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Rehberden Ekle",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            IconButton(onClick = onDismiss) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Kapat",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Doğum günü bilgisi olan kişiler",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
+                
+                // Selection controls
+                if (contacts.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "$selectedCount / ${contacts.size} seçili",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Row {
+                            TextButton(onClick = onSelectAll) {
+                                Text("Tümünü Seç")
+                            }
+                            TextButton(onClick = onDeselectAll) {
+                                Text("Seçimi Kaldır")
+                            }
+                        }
+                    }
+                    HorizontalDivider()
+                }
+                
+                // Content
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    when {
+                        isLoading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CircularProgressIndicator(color = Secondary)
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text("Rehber taranıyor...")
+                                }
+                            }
+                        }
+                        contacts.isEmpty() -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.padding(32.dp)
+                                ) {
+                                    Text(text = "📭", fontSize = 64.sp)
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Doğum günü bilgisi bulunamadı",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Rehberinizdeki kişilere doğum günü ekleyerek burada görüntüleyebilirsiniz.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                items(contacts, key = { it.id }) { contact ->
+                                    ContactItem(
+                                        contact = contact,
+                                        onToggle = { onToggleContact(contact.id) }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Footer
+                if (contacts.isNotEmpty()) {
+                    HorizontalDivider()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("İptal")
+                        }
+                        Button(
+                            onClick = onImport,
+                            enabled = selectedCount > 0,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Secondary)
+                        ) {
+                            Icon(Icons.Default.PersonAdd, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Ekle ($selectedCount)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContactItem(
+    contact: ContactWithBirthday,
+    onToggle: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Avatar
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(
+                    if (contact.isSelected) Secondary.copy(alpha = 0.15f)
+                    else MaterialTheme.colorScheme.surfaceVariant
+                )
+                .then(
+                    if (contact.isSelected) Modifier.border(2.dp, Secondary, CircleShape)
+                    else Modifier
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = contact.name.firstOrNull()?.uppercase() ?: "?",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (contact.isSelected) Secondary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        Spacer(modifier = Modifier.width(16.dp))
+        
+        // Info
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = contact.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = contact.birthday.format(
+                    DateTimeFormatter.ofPattern("d MMMM", Locale("tr"))
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        // Checkbox
+        Checkbox(
+            checked = contact.isSelected,
+            onCheckedChange = { onToggle() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = Secondary,
+                checkmarkColor = Color.White
+            )
+        )
+    }
 }

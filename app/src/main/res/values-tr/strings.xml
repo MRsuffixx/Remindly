@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Remindly</string>
+    
+    <!-- Common -->
+    <string name="app_tagline">Özel günlerinizi unutmayın</string>
+    <string name="cancel">İptal</string>
+    <string name="ok">Tamam</string>
+    <string name="save">Kaydet</string>
+    <string name="delete">Sil</string>
+    <string name="close">Kapat</string>
+    <string name="back">Geri</string>
+    <string name="search">Ara</string>
+    <string name="settings">Ayarlar</string>
+    <string name="add">Ekle</string>
+    <string name="edit">Düzenle</string>
+    <string name="today">Bugün!</string>
+    <string name="tomorrow">Yarın</string>
+    <string name="days_format">%d gün</string>
+    <string name="age_format">%d. yaş</string>
+    
+    <!-- Home Screen -->
+    <string name="home_upcoming">Yaklaşan</string>
+    <string name="home_this_week">Bu Hafta</string>
+    <string name="home_this_month">Bu Ay</string>
+    <string name="home_today">Bugün</string>
+    <string name="home_birthdays">Doğum Günleri</string>
+    <string name="home_special_days">Özel Günler</string>
+    <string name="home_search_hint">İsim veya etkinlik ara…</string>
+    <string name="home_no_events_upcoming">Yaklaşan etkinlik yok</string>
+    <string name="home_no_events_week">Bu hafta etkinlik yok</string>
+    <string name="home_no_events_month">Bu ay etkinlik yok</string>
+    <string name="home_add_event_hint">Yeni etkinlik eklemek için + butonuna tıklayın</string>
+    <string name="home_search_no_results">Sonuç bulunamadı</string>
+    <string name="home_search_try_different">Farklı bir arama terimi deneyin</string>
+    <string name="home_results_found">%d sonuç bulundu</string>
+    
+    <!-- Add/Edit Event Screen -->
+    <string name="add_event_title">Etkinlik Ekle</string>
+    <string name="edit_event_title">Etkinliği Düzenle</string>
+    <string name="event_name">İsim</string>
+    <string name="event_name_hint">İsim girin</string>
+    <string name="event_date">Tarih</string>
+    <string name="event_type">Etkinlik Türü</string>
+    <string name="event_category">Kategori</string>
+    <string name="event_repeat">Tekrar</string>
+    <string name="event_reminders">Hatırlatmalar</string>
+    <string name="event_note">Not</string>
+    <string name="event_note_hint">Not ekleyin (isteğe bağlı)</string>
+    <string name="event_saved">Etkinlik kaydedildi</string>
+    <string name="event_deleted">Etkinlik silindi</string>
+    
+    <!-- Event Types -->
+    <string name="event_type_birthday">Doğum Günü</string>
+    <string name="event_type_anniversary">Yıldönümü</string>
+    <string name="event_type_family">Aile</string>
+    <string name="event_type_holiday">Tatil</string>
+    <string name="event_type_custom">Özel</string>
+    
+    <!-- Repeat Types -->
+    <string name="repeat_yearly">Yıllık</string>
+    <string name="repeat_once">Bir Kez</string>
+    
+    <!-- Reminder Periods -->
+    <string name="reminder_same_day">Aynı gün</string>
+    <string name="reminder_1_day">1 gün önce</string>
+    <string name="reminder_3_days">3 gün önce</string>
+    <string name="reminder_7_days">1 hafta önce</string>
+    <string name="reminder_14_days">2 hafta önce</string>
+    <string name="reminder_30_days">1 ay önce</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_notifications">Bildirimler</string>
+    <string name="settings_enable_notifications">Bildirimleri Etkinleştir</string>
+    <string name="settings_notification_desc">Etkinlik hatırlatmaları al</string>
+    <string name="settings_notification_time">Bildirim Saati</string>
+    <string name="settings_appearance">Görünüm</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistem Ayarını Kullan</string>
+    <string name="settings_theme_light">Açık Tema</string>
+    <string name="settings_theme_dark">Koyu Tema</string>
+    <string name="settings_contacts">Rehber</string>
+    <string name="settings_import_contacts">Rehberden Ekle</string>
+    <string name="settings_import_contacts_desc">Doğum günü olan kişileri içe aktar</string>
+    <string name="settings_data">Veri Yönetimi</string>
+    <string name="settings_backup">Yedekle</string>
+    <string name="settings_backup_desc">Etkinliklerinizi dışa aktarın</string>
+    <string name="settings_restore">Geri Yükle</string>
+    <string name="settings_restore_desc">Etkinliklerinizi içe aktarın</string>
+    <string name="settings_restore_defaults">Varsayılan Tatilleri Yükle</string>
+    <string name="settings_restore_defaults_desc">Türk tatillerini yeniden ekle</string>
+    <string name="settings_delete_all">Tüm Verileri Sil</string>
+    <string name="settings_delete_all_desc">Tüm etkinlikleri kalıcı olarak sil</string>
+    <string name="settings_cloud_sync">Bulut Senkronizasyonu</string>
+    <string name="settings_coming_soon">Yakında…</string>
+    <string name="settings_about">Hakkında</string>
+    <string name="settings_about_app">Uygulama Hakkında</string>
+    <string name="settings_version">Sürüm %s</string>
+    <string name="settings_made_with_love">❤️ ile yapıldı</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_delete_event_title">Etkinliği Sil</string>
+    <string name="dialog_delete_event_message">\"%s\" etkinliğini silmek istediğinize emin misiniz?</string>
+    <string name="dialog_delete_all_title">Tüm Verileri Sil</string>
+    <string name="dialog_delete_all_message">Tüm etkinlikleriniz kalıcı olarak silinecek. Bu işlem geri alınamaz!</string>
+    <string name="dialog_delete_all_confirm">Tümünü Sil</string>
+    <string name="dialog_restore_defaults_title">Varsayılan Tatilleri Yükle</string>
+    <string name="dialog_restore_defaults_message">Mevcut tatil etkinlikleri silinecek ve Türk resmi/dini tatilleri yeniden eklenecek.</string>
+    <string name="dialog_restore_defaults_confirm">Yükle</string>
+    <string name="dialog_backup_title">Yedekleme</string>
+    <string name="dialog_backup_message">Verileriniz aşağıda gösterilmektedir. Kopyala butonuna tıklayarak güvenli bir yere kaydedin.</string>
+    <string name="dialog_backup_copy">Kopyala</string>
+    <string name="dialog_backup_copied">Panoya kopyalandı</string>
+    <string name="dialog_restore_title">Geri Yükle</string>
+    <string name="dialog_restore_message">Daha önce yedeklediğiniz veriyi aşağıya yapıştırın.</string>
+    <string name="dialog_restore_hint">JSON verisini buraya yapıştırın…</string>
+    <string name="dialog_restore_import">İçe Aktar</string>
+    <string name="dialog_theme_title">Tema Seçin</string>
+    <string name="dialog_time_title">Bildirim Saati</string>
+    
+    <!-- Contacts Dialog -->
+    <string name="contacts_title">Rehberden Ekle</string>
+    <string name="contacts_subtitle">Doğum günü bilgisi olan kişiler</string>
+    <string name="contacts_selected">%d / %d seçili</string>
+    <string name="contacts_select_all">Tümünü Seç</string>
+    <string name="contacts_deselect_all">Seçimi Kaldır</string>
+    <string name="contacts_scanning">Rehber taranıyor…</string>
+    <string name="contacts_no_birthdays">Doğum günü bilgisi bulunamadı</string>
+    <string name="contacts_no_birthdays_hint">Rehberinizdeki kişilere doğum günü ekleyerek burada görüntüleyebilirsiniz.</string>
+    <string name="contacts_add_count">Ekle (%d)</string>
+    <string name="contacts_added">%d kişi eklendi</string>
+    <string name="contacts_permission_required">Rehber izni gerekli</string>
+    <string name="contacts_no_selection">Hiç kişi seçilmedi</string>
+    <string name="contacts_import_failed">İçe aktarma başarısız</string>
+    
+    <!-- Toast Messages -->
+    <string name="toast_events_imported">%d etkinlik içe aktarıldı</string>
+    <string name="toast_import_failed">Veri içe aktarılamadı</string>
+    
+    <!-- About Dialog -->
+    <string name="about_description">Doğum günlerini, yıldönümlerini ve özel günleri asla unutmayın!</string>
+</resources>

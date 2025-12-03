@@ -1,3 +1,142 @@
 <resources>
     <string name="app_name">Remindly</string>
+    
+    <!-- Common -->
+    <string name="app_tagline">Never forget your special days</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="close">Close</string>
+    <string name="back">Back</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="today">Today!</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="days_format">%d days</string>
+    <string name="age_format">%d. age</string>
+    
+    <!-- Home Screen -->
+    <string name="home_upcoming">Upcoming</string>
+    <string name="home_this_week">This Week</string>
+    <string name="home_this_month">This Month</string>
+    <string name="home_today">Today</string>
+    <string name="home_birthdays">Birthdays</string>
+    <string name="home_special_days">Special Days</string>
+    <string name="home_search_hint">Search name or event…</string>
+    <string name="home_no_events_upcoming">No upcoming events</string>
+    <string name="home_no_events_week">No events this week</string>
+    <string name="home_no_events_month">No events this month</string>
+    <string name="home_add_event_hint">Tap + to add a new event</string>
+    <string name="home_search_no_results">No results found</string>
+    <string name="home_search_try_different">Try a different search term</string>
+    <string name="home_results_found">%d results found</string>
+    
+    <!-- Add/Edit Event Screen -->
+    <string name="add_event_title">Add Event</string>
+    <string name="edit_event_title">Edit Event</string>
+    <string name="event_name">Name</string>
+    <string name="event_name_hint">Enter name</string>
+    <string name="event_date">Date</string>
+    <string name="event_type">Event Type</string>
+    <string name="event_category">Category</string>
+    <string name="event_repeat">Repeat</string>
+    <string name="event_reminders">Reminders</string>
+    <string name="event_note">Note</string>
+    <string name="event_note_hint">Add a note (optional)</string>
+    <string name="event_saved">Event saved</string>
+    <string name="event_deleted">Event deleted</string>
+    
+    <!-- Event Types -->
+    <string name="event_type_birthday">Birthday</string>
+    <string name="event_type_anniversary">Anniversary</string>
+    <string name="event_type_family">Family</string>
+    <string name="event_type_holiday">Holiday</string>
+    <string name="event_type_custom">Custom</string>
+    
+    <!-- Repeat Types -->
+    <string name="repeat_yearly">Yearly</string>
+    <string name="repeat_once">One-time</string>
+    
+    <!-- Reminder Periods -->
+    <string name="reminder_same_day">Same day</string>
+    <string name="reminder_1_day">1 day before</string>
+    <string name="reminder_3_days">3 days before</string>
+    <string name="reminder_7_days">1 week before</string>
+    <string name="reminder_14_days">2 weeks before</string>
+    <string name="reminder_30_days">1 month before</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_enable_notifications">Enable Notifications</string>
+    <string name="settings_notification_desc">Receive event reminders</string>
+    <string name="settings_notification_time">Notification Time</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System Default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_contacts">Contacts</string>
+    <string name="settings_import_contacts">Import from Contacts</string>
+    <string name="settings_import_contacts_desc">Import contacts with birthdays</string>
+    <string name="settings_data">Data Management</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_backup_desc">Export your events</string>
+    <string name="settings_restore">Restore</string>
+    <string name="settings_restore_desc">Import your events</string>
+    <string name="settings_restore_defaults">Restore Default Holidays</string>
+    <string name="settings_restore_defaults_desc">Re-add default holidays</string>
+    <string name="settings_delete_all">Delete All Data</string>
+    <string name="settings_delete_all_desc">Permanently delete all events</string>
+    <string name="settings_cloud_sync">Cloud Sync</string>
+    <string name="settings_coming_soon">Coming soon…</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_app">About App</string>
+    <string name="settings_version">Version %s</string>
+    <string name="settings_made_with_love">Made with ❤️</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_delete_event_title">Delete Event</string>
+    <string name="dialog_delete_event_message">Are you sure you want to delete \"%s\"?</string>
+    <string name="dialog_delete_all_title">Delete All Data</string>
+    <string name="dialog_delete_all_message">All your events will be permanently deleted. This action cannot be undone!</string>
+    <string name="dialog_delete_all_confirm">Delete All</string>
+    <string name="dialog_restore_defaults_title">Restore Default Holidays</string>
+    <string name="dialog_restore_defaults_message">Existing holiday events will be deleted and default holidays will be re-added.</string>
+    <string name="dialog_restore_defaults_confirm">Restore</string>
+    <string name="dialog_backup_title">Backup</string>
+    <string name="dialog_backup_message">Your data is shown below. Click Copy to save it to a safe place.</string>
+    <string name="dialog_backup_copy">Copy</string>
+    <string name="dialog_backup_copied">Copied to clipboard</string>
+    <string name="dialog_restore_title">Restore</string>
+    <string name="dialog_restore_message">Paste the data you backed up earlier.</string>
+    <string name="dialog_restore_hint">Paste JSON data here…</string>
+    <string name="dialog_restore_import">Import</string>
+    <string name="dialog_theme_title">Select Theme</string>
+    <string name="dialog_time_title">Notification Time</string>
+    
+    <!-- Contacts Dialog -->
+    <string name="contacts_title">Import from Contacts</string>
+    <string name="contacts_subtitle">Contacts with birthday info</string>
+    <string name="contacts_selected">%d / %d selected</string>
+    <string name="contacts_select_all">Select All</string>
+    <string name="contacts_deselect_all">Deselect All</string>
+    <string name="contacts_scanning">Scanning contacts…</string>
+    <string name="contacts_no_birthdays">No birthday info found</string>
+    <string name="contacts_no_birthdays_hint">Add birthdays to your contacts to see them here.</string>
+    <string name="contacts_add_count">Add (%d)</string>
+    <string name="contacts_added">%d contacts added</string>
+    <string name="contacts_permission_required">Contacts permission required</string>
+    <string name="contacts_no_selection">No contacts selected</string>
+    <string name="contacts_import_failed">Import failed</string>
+    
+    <!-- Toast Messages -->
+    <string name="toast_events_imported">%d events imported</string>
+    <string name="toast_import_failed">Import failed</string>
+    
+    <!-- About Dialog -->
+    <string name="about_description">Never forget birthdays, anniversaries, and special days!</string>
 </resources>
