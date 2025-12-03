@@ -312,9 +312,9 @@ private fun HomeContent(
                         text = {
                             Text(
                                 text = when (tab) {
-                                    HomeTab.UPCOMING -> "📅 Yaklaşan"
-                                    HomeTab.THIS_WEEK -> "📆 Bu Hafta"
-                                    HomeTab.THIS_MONTH -> "🗓️ Bu Ay"
+                                    HomeTab.UPCOMING -> "📅 " + stringResource(R.string.home_upcoming)
+                                    HomeTab.THIS_WEEK -> "📆 " + stringResource(R.string.home_this_week)
+                                    HomeTab.THIS_MONTH -> "🗓️ " + stringResource(R.string.home_this_month)
                                 },
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -336,7 +336,7 @@ private fun HomeContent(
             if (birthdays.isNotEmpty()) {
                 item {
                     SectionHeader(
-                        title = "Doğum Günleri",
+                        title = stringResource(R.string.home_birthdays),
                         emoji = "🎂",
                         count = birthdays.size,
                         color = BirthdayColor
@@ -358,7 +358,7 @@ private fun HomeContent(
             if (specialDays.isNotEmpty()) {
                 item {
                     SectionHeader(
-                        title = "Özel Günler",
+                        title = stringResource(R.string.home_special_days),
                         emoji = "✨",
                         count = specialDays.size,
                         color = Secondary
@@ -544,14 +544,14 @@ private fun EventCard(
             },
             title = { 
                 Text(
-                    "Etkinliği Sil",
+                    stringResource(R.string.dialog_delete_event_title),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) 
             },
             text = { 
                 Text(
-                    "\"${event.name}\" etkinliğini silmek istediğinize emin misiniz?",
+                    stringResource(R.string.dialog_delete_event_message, event.name),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) 
@@ -566,12 +566,12 @@ private fun EventCard(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Sil")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("İptal")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -610,12 +610,12 @@ private fun EventCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Sil",
+                            contentDescription = stringResource(R.string.delete),
                             tint = Color.White
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Sil",
+                            text = stringResource(R.string.delete),
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
@@ -737,9 +737,9 @@ private fun EventCard(
                             ) {
                                 Text(
                                     text = when {
-                                        daysUntil == 0 -> "Bugün!"
-                                        daysUntil == 1 -> "Yarın"
-                                        else -> "$daysUntil gün"
+                                        daysUntil == 0 -> stringResource(R.string.today)
+                                        daysUntil == 1 -> stringResource(R.string.tomorrow)
+                                        else -> stringResource(R.string.days_format, daysUntil)
                                     },
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
@@ -749,7 +749,7 @@ private fun EventCard(
                             if (event.yearsSince() > 0 && event.eventType == EventType.BIRTHDAY) {
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "${event.yearsSince() + 1}. yaş 🎈",
+                                    text = stringResource(R.string.age_format, event.yearsSince() + 1) + " 🎈",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Medium,
                                     color = eventColor
@@ -779,16 +779,16 @@ private fun EmptyStateView(tab: HomeTab) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = when (tab) {
-                    HomeTab.UPCOMING -> "Yaklaşan etkinlik yok"
-                    HomeTab.THIS_WEEK -> "Bu hafta etkinlik yok"
-                    HomeTab.THIS_MONTH -> "Bu ay etkinlik yok"
+                    HomeTab.UPCOMING -> stringResource(R.string.home_no_events_upcoming)
+                    HomeTab.THIS_WEEK -> stringResource(R.string.home_no_events_week)
+                    HomeTab.THIS_MONTH -> stringResource(R.string.home_no_events_month)
                 },
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Yeni bir etkinlik eklemek için + butonuna tıklayın",
+                text = stringResource(R.string.home_add_event_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -822,13 +822,13 @@ private fun SearchResultsList(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Sonuç bulunamadı",
+                    text = stringResource(R.string.home_search_no_results),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Farklı bir arama terimi deneyin",
+                    text = stringResource(R.string.home_search_try_different),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -854,7 +854,7 @@ private fun SearchResultsList(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${results.size} sonuç bulundu",
+                        text = stringResource(R.string.home_results_found, results.size),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = Primary

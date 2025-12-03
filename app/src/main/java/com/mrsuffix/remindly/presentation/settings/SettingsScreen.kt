@@ -37,8 +37,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mrsuffix.remindly.R
 import com.mrsuffix.remindly.data.contacts.ContactWithBirthday
 import com.mrsuffix.remindly.domain.model.ThemeMode
 import com.mrsuffix.remindly.ui.theme.*
@@ -55,6 +57,11 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     
+    // String resources for toasts
+    val contactsPermissionRequired = stringResource(R.string.contacts_permission_required)
+    val eventsImportedFormat = stringResource(R.string.toast_events_imported, 0).replace("0", "%d")
+    val contactsAddedFormat = stringResource(R.string.contacts_added, 0).replace("0", "%d")
+    
     // Permission launcher for contacts
     val contactsPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -62,7 +69,7 @@ fun SettingsScreen(
         if (isGranted) {
             viewModel.showContactsDialog(true)
         } else {
-            Toast.makeText(context, "Rehber izni gerekli", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, contactsPermissionRequired, Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -71,7 +78,7 @@ fun SettingsScreen(
         uiState.importResult?.let { result ->
             when (result) {
                 is ImportResult.Success -> {
-                    Toast.makeText(context, "${result.count} etkinlik içe aktarıldı", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, String.format(eventsImportedFormat, result.count), Toast.LENGTH_SHORT).show()
                 }
                 is ImportResult.Error -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
@@ -86,7 +93,7 @@ fun SettingsScreen(
         uiState.contactsImportResult?.let { result ->
             when (result) {
                 is ContactsImportResult.Success -> {
-                    Toast.makeText(context, "${result.count} kişi eklendi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, String.format(contactsAddedFormat, result.count), Toast.LENGTH_SHORT).show()
                 }
                 is ContactsImportResult.Error -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
@@ -101,13 +108,13 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Ayarlar",
+                        text = stringResource(R.string.settings_title),
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -125,15 +132,15 @@ fun SettingsScreen(
         ) {
             // Notifications Section
             item {
-                SettingsSectionHeader(title = "Bildirimler", icon = Icons.Default.Notifications)
+                SettingsSectionHeader(title = stringResource(R.string.settings_notifications), icon = Icons.Default.Notifications)
             }
             
             item {
                 SettingsCard {
                     // Notification Toggle
                     SettingsToggleItem(
-                        title = "Bildirimleri Etkinleştir",
-                        subtitle = "Etkinlik hatırlatmaları al",
+                        title = stringResource(R.string.settings_enable_notifications),
+                        subtitle = stringResource(R.string.settings_notification_desc),
                         icon = Icons.Outlined.NotificationsActive,
                         isChecked = uiState.settings.isNotificationsEnabled,
                         onCheckedChange = viewModel::setNotificationsEnabled
@@ -143,7 +150,7 @@ fun SettingsScreen(
                     
                     // Notification Time
                     SettingsClickableItem(
-                        title = "Bildirim Saati",
+                        title = stringResource(R.string.settings_notification_time),
                         subtitle = uiState.settings.notificationTime.format(
                             DateTimeFormatter.ofPattern("HH:mm")
                         ),
@@ -156,17 +163,17 @@ fun SettingsScreen(
             // Appearance Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                SettingsSectionHeader(title = "Görünüm", icon = Icons.Default.Palette)
+                SettingsSectionHeader(title = stringResource(R.string.settings_appearance), icon = Icons.Default.Palette)
             }
             
             item {
                 SettingsCard {
                     SettingsClickableItem(
-                        title = "Tema",
+                        title = stringResource(R.string.settings_theme),
                         subtitle = when (uiState.themeMode) {
-                            ThemeMode.SYSTEM -> "Sistem Ayarını Kullan"
-                            ThemeMode.LIGHT -> "Açık Tema"
-                            ThemeMode.DARK -> "Koyu Tema"
+                            ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
+                            ThemeMode.LIGHT -> stringResource(R.string.settings_theme_light)
+                            ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
                         },
                         icon = when (uiState.themeMode) {
                             ThemeMode.SYSTEM -> Icons.Outlined.BrightnessAuto
@@ -181,14 +188,14 @@ fun SettingsScreen(
             // Contacts Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                SettingsSectionHeader(title = "Rehber", icon = Icons.Default.Contacts)
+                SettingsSectionHeader(title = stringResource(R.string.settings_contacts), icon = Icons.Default.Contacts)
             }
             
             item {
                 SettingsCard {
                     SettingsClickableItem(
-                        title = "Rehberden Ekle",
-                        subtitle = "Doğum günü olan kişileri içe aktar",
+                        title = stringResource(R.string.settings_import_contacts),
+                        subtitle = stringResource(R.string.settings_import_contacts_desc),
                         icon = Icons.Outlined.PersonAdd,
                         iconColor = Secondary,
                         onClick = {
@@ -211,14 +218,14 @@ fun SettingsScreen(
             // Data Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                SettingsSectionHeader(title = "Veri Yönetimi", icon = Icons.Default.Storage)
+                SettingsSectionHeader(title = stringResource(R.string.settings_data), icon = Icons.Default.Storage)
             }
             
             item {
                 SettingsCard {
                     SettingsClickableItem(
-                        title = "Yedekle",
-                        subtitle = "Etkinliklerinizi dışa aktarın",
+                        title = stringResource(R.string.settings_backup),
+                        subtitle = stringResource(R.string.settings_backup_desc),
                         icon = Icons.Outlined.CloudUpload,
                         iconColor = HolidayColor,
                         onClick = { viewModel.exportData() }
@@ -227,8 +234,8 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     
                     SettingsClickableItem(
-                        title = "Geri Yükle",
-                        subtitle = "Etkinliklerinizi içe aktarın",
+                        title = stringResource(R.string.settings_restore),
+                        subtitle = stringResource(R.string.settings_restore_desc),
                         icon = Icons.Outlined.CloudDownload,
                         iconColor = HolidayColor,
                         onClick = { viewModel.showRestoreDialog(true) }
@@ -237,8 +244,8 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     
                     SettingsClickableItem(
-                        title = "Varsayılan Tatilleri Yükle",
-                        subtitle = "Türk tatillerini yeniden ekle",
+                        title = stringResource(R.string.settings_restore_defaults),
+                        subtitle = stringResource(R.string.settings_restore_defaults_desc),
                         icon = Icons.Outlined.Restore,
                         iconColor = FamilyColor,
                         onClick = { viewModel.showRestoreDefaultsDialog(true) }
@@ -247,8 +254,8 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     
                     SettingsClickableItem(
-                        title = "Tüm Verileri Sil",
-                        subtitle = "Tüm etkinlikleri kalıcı olarak sil",
+                        title = stringResource(R.string.settings_delete_all),
+                        subtitle = stringResource(R.string.settings_delete_all_desc),
                         icon = Icons.Outlined.DeleteForever,
                         iconColor = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.showDeleteAllDialog(true) }
@@ -257,8 +264,8 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     
                     SettingsClickableItem(
-                        title = "Bulut Senkronizasyonu",
-                        subtitle = "Yakında...",
+                        title = stringResource(R.string.settings_cloud_sync),
+                        subtitle = stringResource(R.string.settings_coming_soon),
                         icon = Icons.Outlined.Cloud,
                         onClick = { },
                         enabled = false
@@ -269,14 +276,14 @@ fun SettingsScreen(
             // About Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                SettingsSectionHeader(title = "Hakkında", icon = Icons.Default.Info)
+                SettingsSectionHeader(title = stringResource(R.string.settings_about), icon = Icons.Default.Info)
             }
             
             item {
                 SettingsCard {
                     SettingsClickableItem(
-                        title = "Uygulama Hakkında",
-                        subtitle = "Sürüm 1.0.0",
+                        title = stringResource(R.string.settings_about_app),
+                        subtitle = stringResource(R.string.settings_version, "1.0.0"),
                         icon = Icons.Outlined.Info,
                         onClick = { viewModel.showAboutDialog(true) }
                     )
