@@ -89,7 +89,17 @@ class EventRepositoryImpl @Inject constructor(
     }
     
     override fun searchEvents(query: String): Flow<List<Event>> {
-        return eventDao.searchEvents(query).map { entities ->
+        // Security: Sanitize search query - limit length and remove special characters
+        val sanitizedQuery = query
+            .take(100) // Limit query length
+            .replace(Regex("[%_\\[\\]^]"), "") // Remove SQL LIKE wildcards
+            .trim()
+        
+        if (sanitizedQuery.isBlank()) {
+            return kotlinx.coroutines.flow.flowOf(emptyList())
+        }
+        
+        return eventDao.searchEvents(sanitizedQuery).map { entities ->
             entities.map { it.toDomain() }
         }
     }
@@ -115,16 +125,49 @@ class EventRepositoryImpl @Inject constructor(
     
     override suspend fun exportEvents(): String {
         val events = eventDao.getAllEventsSync().map { it.toDomain() }
-        return gson.toJson(events)
+        val exportModels = events.map { event ->
+            EventExportModel(
+                name = event.name,
+                dateEpochDay = event.date.toEpochDay(),
+                eventType = event.eventType.name,
+                eventCategory = event.eventCategory.name,
+                repeatType = event.repeatType.name,
+                reminderDays = event.reminderDays,
+                note = event.note,
+                isActive = event.isActive
+            )
+        }
+        return gson.toJson(exportModels)
     }
     
     override suspend fun importEvents(json: String): Int {
         return try {
+            // Security: Limit JSON size to prevent memory exhaustion (5MB max)
+            if (json.length > 5_000_000) return 0
+            
+            // Security: Basic JSON validation
+            val trimmedJson = json.trim()
+            if (!trimmedJson.startsWith("[") || !trimmedJson.endsWith("]")) return 0
+            
             val type = object : TypeToken<List<EventExportModel>>() {}.type
             val exportedEvents: List<EventExportModel> = gson.fromJson(json, type)
-            val events = exportedEvents.map { it.toEvent() }
-            eventDao.insertEvents(events.map { EventEntity.fromDomain(it) })
-            events.size
+            
+            // Security: Limit number of events to import (max 10000)
+            if (exportedEvents.size > 10000) return 0
+            
+            // Security: Validate and sanitize each event
+            val validEvents = exportedEvents.mapNotNull { model ->
+                try {
+                    model.toEventSafe()
+                } catch (e: Exception) {
+                    null // Skip invalid events
+                }
+            }
+            
+            if (validEvents.isEmpty()) return 0
+            
+            eventDao.insertEvents(validEvents.map { EventEntity.fromDomain(it) })
+            validEvents.size
         } catch (e: Exception) {
             0
         }
@@ -152,6 +195,15 @@ data class EventExportModel(
     val note: String,
     val isActive: Boolean
 ) {
+    companion object {
+        // Security: Maximum allowed string lengths
+        private const val MAX_NAME_LENGTH = 200
+        private const val MAX_NOTE_LENGTH = 2000
+        // Security: Valid date range (year 1900 to 2200)
+        private val MIN_EPOCH_DAY = LocalDate.of(1900, 1, 1).toEpochDay()
+        private val MAX_EPOCH_DAY = LocalDate.of(2200, 12, 31).toEpochDay()
+    }
+    
     fun toEvent(): Event {
         return Event(
             name = name,
@@ -161,6 +213,61 @@ data class EventExportModel(
             repeatType = com.mrsuffix.remindly.domain.model.RepeatType.valueOf(repeatType),
             reminderDays = reminderDays,
             note = note,
+            isActive = isActive
+        )
+    }
+    
+    /**
+     * Security: Safe conversion with input validation and sanitization
+     */
+    fun toEventSafe(): Event? {
+        // Validate name
+        if (name.isBlank() || name.length > MAX_NAME_LENGTH) return null
+        val sanitizedName = name.trim()
+            .replace(Regex("[<>\"'&]"), "") // Remove potential XSS characters
+            .take(MAX_NAME_LENGTH)
+        
+        // Validate date
+        if (dateEpochDay < MIN_EPOCH_DAY || dateEpochDay > MAX_EPOCH_DAY) return null
+        
+        // Validate enums (will throw if invalid)
+        val validEventType = try {
+            EventType.valueOf(eventType)
+        } catch (e: Exception) {
+            return null
+        }
+        
+        val validEventCategory = try {
+            EventCategory.valueOf(eventCategory)
+        } catch (e: Exception) {
+            return null
+        }
+        
+        val validRepeatType = try {
+            com.mrsuffix.remindly.domain.model.RepeatType.valueOf(repeatType)
+        } catch (e: Exception) {
+            return null
+        }
+        
+        // Validate reminder days (must be 0-365)
+        val validReminderDays = reminderDays
+            .filter { it in 0..365 }
+            .take(10) // Max 10 reminder days
+            .ifEmpty { listOf(1) } // Default to 1 day if empty
+        
+        // Sanitize note
+        val sanitizedNote = note
+            .take(MAX_NOTE_LENGTH)
+            .replace(Regex("[<>\"'&]"), "") // Remove potential XSS characters
+        
+        return Event(
+            name = sanitizedName,
+            date = LocalDate.ofEpochDay(dateEpochDay),
+            eventType = validEventType,
+            eventCategory = validEventCategory,
+            repeatType = validRepeatType,
+            reminderDays = validReminderDays,
+            note = sanitizedNote,
             isActive = isActive
         )
     }

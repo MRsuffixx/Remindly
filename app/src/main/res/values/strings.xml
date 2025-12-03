@@ -139,4 +139,19 @@
     
     <!-- About Dialog -->
     <string name="about_description">Never forget birthdays, anniversaries, and special days!</string>
+    <string name="about_developers">Developers</string>
+    <string name="about_developer_1">Berat Nerkiz - 242239090</string>
+    <string name="about_developer_2">Mehmet Efe KARADAĞ - 242239016</string>
+    <string name="about_university">Manisa Celal Bayar University\nTurgutlu Vocational School</string>
+    <string name="about_github">View on GitHub</string>
+    
+    <!-- Update -->
+    <string name="update_check">Check for Updates</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_available">Update Available!</string>
+    <string name="update_latest_version">Latest version: %s</string>
+    <string name="update_current_version">Current version: %s</string>
+    <string name="update_download">Download</string>
+    <string name="update_no_update">You have the latest version</string>
+    <string name="update_pre_release">Pre-release</string>
 </resources>

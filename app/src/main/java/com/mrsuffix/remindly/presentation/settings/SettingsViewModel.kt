@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrsuffix.remindly.data.contacts.ContactWithBirthday
 import com.mrsuffix.remindly.data.contacts.ContactsHelper
+import com.mrsuffix.remindly.data.update.UpdateChecker
+import com.mrsuffix.remindly.data.update.UpdateInfo
 import com.mrsuffix.remindly.domain.model.Settings
 import com.mrsuffix.remindly.domain.model.ThemeMode
 import com.mrsuffix.remindly.domain.repository.EventRepository
@@ -30,11 +32,15 @@ data class SettingsUiState(
     val showDeleteAllDialog: Boolean = false,
     val showRestoreDefaultsDialog: Boolean = false,
     val showContactsDialog: Boolean = false,
+    val showUpdateDialog: Boolean = false,
     val exportedData: String? = null,
     val importResult: ImportResult? = null,
     val contactsWithBirthdays: List<ContactWithBirthday> = emptyList(),
     val isLoadingContacts: Boolean = false,
-    val contactsImportResult: ContactsImportResult? = null
+    val contactsImportResult: ContactsImportResult? = null,
+    val updateInfo: UpdateInfo? = null,
+    val isCheckingUpdate: Boolean = false,
+    val currentVersion: String = UpdateChecker.CURRENT_VERSION
 )
 
 sealed class ImportResult {
@@ -52,7 +58,8 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val eventRepository: EventRepository,
     private val addTurkishHolidaysUseCase: AddTurkishHolidaysUseCase,
-    private val contactsHelper: ContactsHelper
+    private val contactsHelper: ContactsHelper,
+    private val updateChecker: UpdateChecker
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -248,4 +255,25 @@ class SettingsViewModel @Inject constructor(
     fun clearContactsImportResult() {
         _uiState.update { it.copy(contactsImportResult = null) }
     }
+    
+    // Update Checker
+    fun showUpdateDialog(show: Boolean) {
+        _uiState.update { it.copy(showUpdateDialog = show) }
+    }
+    
+    fun checkForUpdates() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCheckingUpdate = true) }
+            val updateInfo = updateChecker.checkForUpdates(includePreRelease = true)
+            _uiState.update { it.copy(
+                updateInfo = updateInfo,
+                isCheckingUpdate = false,
+                showUpdateDialog = updateInfo.hasUpdate
+            ) }
+        }
+    }
+    
+    fun getGitHubUrl(): String = UpdateChecker.GITHUB_REPO_URL
+    
+    fun getCurrentVersion(): String = UpdateChecker.CURRENT_VERSION
 }

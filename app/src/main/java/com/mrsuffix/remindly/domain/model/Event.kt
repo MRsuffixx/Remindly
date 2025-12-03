@@ -76,8 +76,16 @@ enum class EventType {
 
 /**
  * Detailed event categories
+ * fixedMonth and fixedDay are for holidays with fixed dates (null means user must enter date)
+ * isReligious indicates holidays that change every year (should use ONE_TIME repeat)
  */
-enum class EventCategory(val displayName: String, val emoji: String) {
+enum class EventCategory(
+    val displayName: String, 
+    val emoji: String,
+    val fixedMonth: Int? = null,
+    val fixedDay: Int? = null,
+    val isReligious: Boolean = false
+) {
     // Birthday types
     BIRTHDAY("Doğum Günü", "🎂"),
     CHILDREN_BIRTHDAY("Çocuk Doğum Günü", "👶"),
@@ -97,25 +105,39 @@ enum class EventCategory(val displayName: String, val emoji: String) {
     HOUSE_ANNIVERSARY("Ev Yıldönümü", "🏠"),
     FAMILY_ANNIVERSARY("Aile Yıldönümü", "👨‍👩‍👧"),
     
-    // Family types
-    MOTHERS_DAY("Anneler Günü", "👩"),
-    FATHERS_DAY("Babalar Günü", "👨"),
+    // Family types - Fixed dates (approximate, second Sunday of May / third Sunday of June)
+    MOTHERS_DAY("Anneler Günü", "👩", 5, 12),
+    FATHERS_DAY("Babalar Günü", "👨", 6, 16),
     
-    // Turkish Holidays - Religious
-    EID_AL_FITR("Ramazan Bayramı", "🌙"),
-    EID_AL_ADHA("Kurban Bayramı", "🐑"),
+    // Turkish Holidays - Religious (dates change every year based on Islamic calendar)
+    EID_AL_FITR("Ramazan Bayramı", "🌙", isReligious = true),
+    EID_AL_ADHA("Kurban Bayramı", "🐑", isReligious = true),
     
-    // Turkish Holidays - National
-    NEW_YEARS_EVE("Yılbaşı", "🎆"),
-    VALENTINES_DAY("Sevgililer Günü", "❤️"),
-    TEACHERS_DAY("Öğretmenler Günü", "📚"),
-    APRIL_23("23 Nisan", "🇹🇷"),
-    MAY_19("19 Mayıs", "🇹🇷"),
-    AUGUST_30("30 Ağustos", "🇹🇷"),
-    OCTOBER_29("29 Ekim", "🇹🇷"),
+    // Turkish Holidays - National (Fixed dates)
+    NEW_YEARS_EVE("Yılbaşı", "🎆", 1, 1),
+    VALENTINES_DAY("Sevgililer Günü", "❤️", 2, 14),
+    TEACHERS_DAY("Öğretmenler Günü", "📚", 11, 24),
+    APRIL_23("23 Nisan", "🇹🇷", 4, 23),
+    MAY_19("19 Mayıs", "🇹🇷", 5, 19),
+    AUGUST_30("30 Ağustos", "🇹🇷", 8, 30),
+    OCTOBER_29("29 Ekim", "🇹🇷", 10, 29),
     
     // Custom
-    CUSTOM("Özel Gün", "⭐")
+    CUSTOM("Özel Gün", "⭐");
+    
+    /**
+     * Check if this category has a fixed date
+     */
+    fun hasFixedDate(): Boolean = fixedMonth != null && fixedDay != null
+    
+    /**
+     * Get the fixed date for the current year (or null if no fixed date)
+     */
+    fun getFixedDate(year: Int = java.time.LocalDate.now().year): java.time.LocalDate? {
+        return if (fixedMonth != null && fixedDay != null) {
+            java.time.LocalDate.of(year, fixedMonth, fixedDay)
+        } else null
+    }
 }
 
 /**

@@ -95,7 +95,44 @@ class AddEditEventViewModel @Inject constructor(
     }
     
     fun updateEventCategory(category: EventCategory) {
-        _uiState.update { it.copy(eventCategory = category, showCategoryPicker = false) }
+        _uiState.update { state ->
+            var newDate = state.date
+            var newRepeatType = state.repeatType
+            
+            // Auto-fill date for fixed holidays
+            if (category.hasFixedDate()) {
+                newDate = category.getFixedDate() ?: state.date
+            }
+            
+            // Set ONE_TIME for religious holidays (dates change every year)
+            if (category.isReligious) {
+                newRepeatType = RepeatType.ONE_TIME
+            } else if (!state.isEditing) {
+                // Default to YEARLY for non-religious events
+                newRepeatType = RepeatType.YEARLY
+            }
+            
+            state.copy(
+                eventCategory = category, 
+                date = newDate,
+                repeatType = newRepeatType,
+                showCategoryPicker = false
+            )
+        }
+    }
+    
+    /**
+     * Check if the selected category has a fixed date (date picker should be disabled)
+     */
+    fun isDateEditable(): Boolean {
+        return !_uiState.value.eventCategory.hasFixedDate()
+    }
+    
+    /**
+     * Check if the selected category is a religious holiday
+     */
+    fun isReligiousHoliday(): Boolean {
+        return _uiState.value.eventCategory.isReligious
     }
     
     fun updateRepeatType(repeatType: RepeatType) {
@@ -135,23 +172,48 @@ class AddEditEventViewModel @Inject constructor(
     fun saveEvent() {
         val state = _uiState.value
         
+        // Security: Validate input
         if (state.name.isBlank()) {
             _uiState.update { it.copy(nameError = "İsim boş olamaz") }
+            return
+        }
+        
+        // Security: Limit name length
+        if (state.name.length > 200) {
+            _uiState.update { it.copy(nameError = "İsim çok uzun (max 200 karakter)") }
+            return
+        }
+        
+        // Security: Limit note length
+        if (state.note.length > 2000) {
+            _uiState.update { it.copy(nameError = "Not çok uzun (max 2000 karakter)") }
             return
         }
         
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
+            // Security: Sanitize input - remove potential XSS characters
+            val sanitizedName = state.name.trim()
+                .replace(Regex("[<>\"'&]"), "")
+                .take(200)
+            
+            val sanitizedNote = state.note.trim()
+                .replace(Regex("[<>\"'&]"), "")
+                .take(2000)
+            
             val event = Event(
                 id = state.id,
-                name = state.name.trim(),
+                name = sanitizedName,
                 date = state.date,
                 eventType = state.eventType,
                 eventCategory = state.eventCategory,
                 repeatType = state.repeatType,
-                reminderDays = state.reminderDays.ifEmpty { listOf(1) },
-                note = state.note.trim(),
+                reminderDays = state.reminderDays
+                    .filter { it in 0..365 }
+                    .take(10)
+                    .ifEmpty { listOf(1) },
+                note = sanitizedNote,
                 isActive = true
             )
             

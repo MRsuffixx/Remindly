@@ -140,4 +140,19 @@
     
     <!-- About Dialog -->
     <string name="about_description">Doğum günlerini, yıldönümlerini ve özel günleri asla unutmayın!</string>
+    <string name="about_developers">Geliştiriciler</string>
+    <string name="about_developer_1">Berat Nerkiz - 242239090</string>
+    <string name="about_developer_2">Mehmet Efe KARADAĞ - 242239016</string>
+    <string name="about_university">Manisa Celal Bayar Üniversitesi\nTurgutlu Meslek Yüksekokulu</string>
+    <string name="about_github">GitHub\'da Görüntüle</string>
+    
+    <!-- Update -->
+    <string name="update_check">Güncelleme Kontrol Et</string>
+    <string name="update_checking">Güncellemeler kontrol ediliyor…</string>
+    <string name="update_available">Güncelleme Mevcut!</string>
+    <string name="update_latest_version">Son sürüm: %s</string>
+    <string name="update_current_version">Mevcut sürüm: %s</string>
+    <string name="update_download">İndir</string>
+    <string name="update_no_update">En son sürümü kullanıyorsunuz</string>
+    <string name="update_pre_release">Ön sürüm</string>
 </resources>

@@ -109,7 +109,9 @@ fun AddEditEventScreen(
                 item {
                     DatePickerCard(
                         selectedDate = uiState.date,
-                        onDateClick = { viewModel.showDatePicker(true) }
+                        onDateClick = { viewModel.showDatePicker(true) },
+                        isEditable = viewModel.isDateEditable(),
+                        isReligious = viewModel.isReligiousHoliday()
                     )
                 }
                 
@@ -240,15 +242,20 @@ fun AddEditEventScreen(
 @Composable
 private fun DatePickerCard(
     selectedDate: LocalDate,
-    onDateClick: () -> Unit
+    onDateClick: () -> Unit,
+    isEditable: Boolean = true,
+    isReligious: Boolean = false
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onDateClick),
+            .then(if (isEditable) Modifier.clickable(onClick = onDateClick) else Modifier),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (isEditable) 
+                MaterialTheme.colorScheme.surfaceVariant 
+            else 
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
         )
     ) {
         Row(
@@ -261,13 +268,19 @@ private fun DatePickerCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Primary.copy(alpha = 0.15f)),
+                    .background(
+                        if (isEditable) Primary.copy(alpha = 0.15f)
+                        else if (isReligious) Color(0xFFFFA726).copy(alpha = 0.15f)
+                        else Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Default.DateRange,
+                    if (isReligious) Icons.Default.Edit else Icons.Default.DateRange,
                     contentDescription = null,
-                    tint = Primary
+                    tint = if (isEditable) Primary
+                        else if (isReligious) Color(0xFFFFA726)
+                        else Color(0xFF4CAF50)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -284,12 +297,28 @@ private fun DatePickerCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+                if (!isEditable) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isReligious) "⚠️ Dini bayram - Tarihi her yıl değişir" else "✓ Sabit tarihli bayram",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isReligious) Color(0xFFFFA726) else Color(0xFF4CAF50)
+                    )
+                }
             }
-            Icon(
-                Icons.Default.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (isEditable) {
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Icon(
+                    if (isReligious) Icons.Default.Warning else Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = if (isReligious) Color(0xFFFFA726) else Color(0xFF4CAF50)
+                )
+            }
         }
     }
 }
